@@ -1,82 +1,51 @@
-const date = new Date();
+const display = document.getElementById('clock');
+const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+audio.loop = true;
+let alarmTime = null;
+let alarmTimeout = null;
 
-const renderCalendar = () => {
-  date.setDate(1);
+function updateTime() {
+    const date = new Date();
 
-  const monthDays = document.querySelector(".days");
+    const hour = formatTime(date.getHours());
+    const minutes = formatTime(date.getMinutes());
+    const seconds = formatTime(date.getSeconds());
 
-  const lastDay = new Date(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    0
-  ).getDate();
 
-  const prevLastDay = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    0
-  ).getDate();
 
-  const firstDayIndex = date.getDay();
+    display.innerText=`${hour} : ${minutes} : ${seconds}`
+}
 
-  const lastDayIndex = new Date(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    0
-  ).getDay();
-
-  const nextDays = 7 - lastDayIndex - 1;
-
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  document.querySelector(".date h1").innerHTML = months[date.getMonth()];
-
-  document.querySelector(".date p").innerHTML = new Date().toDateString();
-
-  let days = "";
-
-  for (let x = firstDayIndex; x > 0; x--) {
-    days += `<div class="prev-date">${prevLastDay - x + 1}</div>`;
-  }
-
-  for (let i = 1; i <= lastDay; i++) {
-    if (
-      i === new Date().getDate() &&
-      date.getMonth() === new Date().getMonth()
-    ) {
-      days += `<div class="today">${i}</div>`;
-    } else {
-      days += `<div>${i}</div>`;
+function formatTime(time) {
+    if ( time < 10 ) {
+        return '0' + time;
     }
-  }
+    return time;
+}
 
-  for (let j = 1; j <= nextDays; j++) {
-    days += `<div class="next-date">${j}</div>`;
-    monthDays.innerHTML = days;
-  }
-};
+function setAlarmTime(value) {
+    alarmTime = value;
+}
 
-document.querySelector(".prev").addEventListener("click", () => {
-  date.setMonth(date.getMonth() - 1);
-  renderCalendar();
-});
+function setAlarm() {
+    if(alarmTime) {
+        const current = new Date();
+        const timeToAlarm = new Date(alarmTime);
 
-document.querySelector(".next").addEventListener("click", () => {
-  date.setMonth(date.getMonth() + 1);
-  renderCalendar();
-});
+        if (timeToAlarm > current) {
+            const timeout = timeToAlarm.getTime() - current.getTime();
+            alarmTimeout = setTimeout(() => audio.play(), timeout);
+            alert('Alarm set');
+        }
+    }
+}
 
-renderCalendar();
+function clearAlarm() {
+    audio.pause();
+    if (alarmTimeout) {
+        clearTimeout(alarmTimeout);
+        alert('Alarm cleared');
+    }
+}
+
+setInterval(updateTime, 1000);
